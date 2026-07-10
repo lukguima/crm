@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "20:01 UTC",
+  "lastUpdate": "21:01 UTC",
   "revenue": {
     "total": 0,
     "change": 0
@@ -9,9 +9,9 @@
     "goal": 10
   },
   "leads": {
-    "total": 18,
+    "total": 19,
     "channels": {
-      "youtube": 18,
+      "youtube": 19,
       "pinterest": 0,
       "tiktok": 0
     }
@@ -33,18 +33,18 @@
         "published": "2026-06-26"
       },
       {
+        "title": "Why Your First $100 Does NOTHING For 10 Years (Then Everything Changes)",
+        "views": 4,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-07-10"
+      },
+      {
         "title": "The Hidden Costs of Free Money: Are You Paying More Than You Think?",
         "views": 4,
         "likes": 0,
         "comments": 0,
         "published": "2026-06-20"
-      },
-      {
-        "title": "Why Your First $100 Does NOTHING For 10 Years (Then Everything Changes)",
-        "views": 3,
-        "likes": 0,
-        "comments": 0,
-        "published": "2026-07-10"
       },
       {
         "title": "From $34 to $100,000 in 18 Months: The Exact Steps Nobody Tells You",
