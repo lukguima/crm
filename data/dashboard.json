@@ -1,1 +1,94 @@
-{}
+{
+  "lastUpdate": "18:06 UTC",
+  "revenue": {
+    "total": 0,
+    "change": 0
+  },
+  "sales": {
+    "total": 0,
+    "goal": 10
+  },
+  "leads": {
+    "total": 18,
+    "channels": {
+      "youtube": 18,
+      "pinterest": 0,
+      "tiktok": 0
+    }
+  },
+  "youtube": {
+    "subs": 1,
+    "growth": 0,
+    "views": 15,
+    "videos": 6,
+    "clicks": 0,
+    "ctr": 0,
+    "retention": null,
+    "topVideos": [
+      {
+        "title": "Gen X vs. Millennials: The Dinner Table Fight Over Money",
+        "views": 9,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-06-26"
+      },
+      {
+        "title": "The Hidden Costs of Free Money: Are You Paying More Than You Think?",
+        "views": 4,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-06-20"
+      },
+      {
+        "title": "Why Your First $100 Does NOTHING For 10 Years (Then Everything Changes)",
+        "views": 3,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-07-10"
+      },
+      {
+        "title": "From $34 to $100,000 in 18 Months: The Exact Steps Nobody Tells You",
+        "views": 1,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-06-30"
+      },
+      {
+        "title": "50k Investment Decision: Stocks vs Real Estate Over 10 Years",
+        "views": 1,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-06-23"
+      },
+      {
+        "title": "The real reason 73% of couples fight about money (it's not what you think)",
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "published": "2026-07-05"
+      }
+    ]
+  },
+  "gumroad": {
+    "sales": 0,
+    "revenue": 0,
+    "products": 1,
+    "refundRate": 0
+  },
+  "products": [
+    {
+      "name": "The Bamboo Method",
+      "price": 9,
+      "sales": 0,
+      "revenue": 0,
+      "platform": "Gumroad",
+      "status": "live",
+      "url": "https://bamboo.crya.app.br"
+    }
+  ],
+  "pipeline": {
+    "nextVideo": "2026-07-11T06:00:00Z",
+    "cronActive": true,
+    "videosPublished": 1
+  }
+}
