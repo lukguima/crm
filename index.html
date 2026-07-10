@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Money Logic — CRM Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0A0E27; color: #F5F0E8; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; width: 220px; height: 100vh; background: #0D1233; border-right: 1px solid rgba(255,215,0,0.1); padding: 24px 0; z-index: 100; }
+        .sidebar .logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px; }
+        .sidebar .logo h1 { font-size: 16px; color: #FFD700; }
+        .sidebar .logo span { font-size: 11px; color: #666; }
+        .sidebar a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: #888; text-decoration: none; font-size: 13px; transition: 0.2s; }
+        .sidebar a:hover, .sidebar a.active { color: #FFD700; background: rgba(255,215,0,0.05); border-right: 2px solid #FFD700; }
+        .sidebar a .icon { width: 18px; text-align: center; }
+        .sidebar .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 12px 20px; }
+
+        /* Main */
+        .main { margin-left: 220px; padding: 24px 32px; max-width: 1400px; }
+
+        /* Top bar */
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .topbar h2 { font-size: 20px; color: #FFD700; }
+        .topbar .date { color: #666; font-size: 13px; }
+        .topbar .badge { background: rgba(255,215,0,0.1); color: #FFD700; padding: 4px 12px; border-radius: 12px; font-size: 12px; }
+
+        /* Cards grid */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; }
+        .card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .card .value { font-size: 28px; font-weight: 700; color: #F5F0E8; }
+        .card .value.gold { color: #FFD700; }
+        .card .change { font-size: 12px; margin-top: 4px; }
+        .card .change.up { color: #00C853; }
+        .card .change.down { color: #FF6B35; }
+        .card .sub { font-size: 12px; color: #666; margin-top: 2px; }
+
+        /* Charts */
+        .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .chart-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; }
+        .chart-box h3 { font-size: 14px; color: #888; margin-bottom: 16px; }
+        .chart-box canvas { max-height: 250px; }
+
+        /* Tables */
+        .table-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
+        .table-box h3 { font-size: 14px; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .table-box h3 .count { color: #FFD700; font-size: 12px; background: rgba(255,215,0,0.1); padding: 2px 8px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 8px 12px; color: #666; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        td .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        td .tag.yt { background: rgba(255,0,0,0.1); color: #FF4444; }
+        td .tag.gr { background: rgba(0,200,83,0.1); color: #00C853; }
+        td .tag.pt { background: rgba(189,8,28,0.1); color: #E60023; }
+        td .tag.tt { background: rgba(0,0,0,0.1); color: #888; }
+
+        /* Section titles */
+        .section-title { font-size: 14px; color: #FFD700; margin-bottom: 16px; margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ''; width: 3px; height: 16px; background: #FFD700; border-radius: 2px; }
+
+        /* 3-col grid */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 16px; }
+            .chart-grid { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .cards { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <div class="logo">
+        <h1>💰 Real Money Logic</h1>
+        <span>CRM Ecosystem</span>
+    </div>
+    <a href="#" class="active"><span class="icon">📊</span> Dashboard</a>
+    <a href="#"><span class="icon">📺</span> YouTube</a>
+    <a href="#"><span class="icon">🛒</span> Gumroad</a>
+    <a href="#"><span class="icon">📌</span> Pinterest</a>
+    <a href="#"><span class="icon">🎵</span> TikTok Shop</a>
+    <div class="divider"></div>
+    <a href="#"><span class="icon">👥</span> Clientes</a>
+    <a href="#"><span class="icon">📦</span> Produtos</a>
+    <a href="#"><span class="icon">📈</span> Relatórios</a>
+    <a href="#"><span class="icon">⚙️</span> Config</a>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div>
+            <h2>📊 Dashboard</h2>
+            <div class="date" id="currentDate"></div>
+        </div>
+        <div class="badge">🔄 Última atualização: <span id="lastUpdate">—</span></div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards">
+        <div class="card">
+            <div class="label">Receita Total (mês)</div>
+            <div class="value gold" id="totalRevenue">$0</div>
+            <div class="change up">📈 +0% vs mês passado</div>
+        </div>
+        <div class="card">
+            <div class="label">Vendas (mês)</div>
+            <div class="value" id="totalSales">0</div>
+            <div class="sub">🎯 Meta: 10 vendas/mês</div>
+        </div>
+        <div class="card">
+            <div class="label">Leads Capturados</div>
+            <div class="value" id="totalLeads">0</div>
+            <div class="sub">📌 Pinterest + YouTube</div>
+        </div>
+        <div class="card">
+            <div class="label">Inscritos YouTube</div>
+            <div class="value" id="ytSubs">0</div>
+            <div class="change up" id="ytGrowth">📈 +0 esta semana</div>
+        </div>
+        <div class="card">
+            <div class="label">Produtos Ativos</div>
+            <div class="value" id="activeProducts">1</div>
+            <div class="sub">📖 The Bamboo Method</div>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="chart-grid">
+        <div class="chart-box">
+            <h3>📈 Receita — Últimos 30 Dias</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>🎯 Vendas por Canal</h3>
+            <canvas id="salesPieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- YOUTUBE SECTION -->
+    <div class="section-title">📺 YouTube — @RealMoneyLogic_Official</div>
+    <div class="cards">
+        <div class="card">
+            <div class="label">Total de Views</div>
+            <div class="value" id="ytViews">0</div>
+        </div>
+        <div class="card">
+            <div class="label">Vídeos Publicados</div>
+            <div class="value" id="ytVideos">1</div>
+            <div class="sub">🎬 1 no ar + cron diário</div>
+        </div>
+        <div class="card">
+            <div class="label">Cliques no Link</div>
+            <div class="value" id="ytClicks">0</div>
+            <div class="sub">🔗 CTR: <span id="ytCtr">0%</span></div>
+        </div>
+        <div class="card">
+            <div class="label">Retenção Média</div>
+            <div class="value" id="ytRetention">—</div>
+            <div class="sub">🎯 Meta: >40%</div>
+        </div>
+    </div>
+
+    <!-- RECENT VIDEOS -->
+    <div class="table-box">
+        <h3>Últimos Vídeos <span class="count" id="videoCount">1</span></h3>
+        <table>
+            <thead>
+                <tr><th>Vídeo</th><th>Views</th><th>Likes</th><th>Comentários</th><th>Publicado</th><th>Status</th></tr>
+            </thead>
+            <tbody id="videoTable">
+                <tr>
+                    <td>Why Your First $100 Does NOTHING For 10 Years</td>
+                    <td id="v1Views">—</td>
+                    <td id="v1Likes">—</td>
+                    <td id="v1Comments">—</td>
+                    <td>10 Jul 2026</td>
+                    <td><span class="tag yt">📺 Publico</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="section-title">🛒 Produtos & Vendas</div>
+    <div class="table-box">
+        <h3>Produtos <span class="count">1</span></h3>
+        <table>
+            <thead>
+                <tr><th>Produto</th><th>Preço</th><th>Vendas (mês)</th><th>Receita</th><th>Plataforma</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>The Bamboo Method</td>
+                    <td>$9</td>
+                    <td id="gumroadSales">0</td>
+                    <td id="gumroadRevenue">$0</td>
+                    <td><span class="tag gr">Gumroad</span></td>
+                    <td>✅ Live</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="section-title">⚙️ Pipeline Automatizado</div>
+    <div class="grid-3">
+        <div class="card" style="border-left: 3px solid #FFD700;">
+            <div class="label">📺 YouTube</div>
+            <div class="value" style="font-size:18px;">🎬 Vídeo Diário</div>
+            <div class="sub">⏰ 06:00 UTC · Próximo: <span id="nextVideo">11 Jul 2026</span></div>
+        </div>
+        <div class="card" style="border-left: 3px solid #00C853;">
+            <div class="label">🛒 E-book</div>
+            <div class="value" style="font-size:18px;">📖 The Bamboo Method</div>
+            <div class="sub">🌐 bamboo.crya.app.br · $9</div>
+        </div>
+        <div class="card" style="border-left: 3px solid #FF6B35;">
+            <div class="label">📌 Distribuição</div>
+            <div class="value" style="font-size:18px;">📢 5 Plataformas</div>
+            <div class="sub">📌 Pinterest · 🎬 TikTok · 📝 X · 🖼️ IG · 👥 FB</div>
+        </div>
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <div class="table-box">
+        <h3>📋 Atividade Recente</h3>
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Evento</th><th>Detalhes</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>10 Jul 2026</td><td>📺 Vídeo #1 publicado</td><td>"Why Your First $100..."</td><td>✅ Público</td></tr>
+                <tr><td>10 Jul 2026</td><td>🛒 E-book lançado</td><td>The Bamboo Method — $9</td><td>✅ Live</td></tr>
+                <tr><td>10 Jul 2026</td><td>🌐 Página de vendas</td><td>bamboo.crya.app.br</td><td>✅ No ar</td></tr>
+                <tr><td>10 Jul 2026</td><td>📌 Pinterest config</td><td>10 pins prontos</td><td>⏳ Aguardando postagem</td></tr>
+                <tr><td>11 Jul 2026</td><td>📺 Vídeo #2 (automático)</td><td>06:00 UTC — cron diário</td><td>⏳ Agendado</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Set current date
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+// --- CHARTS ---
+
+// Revenue Chart (mock data until API integration)
+const revCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revCtx, {
+    type: 'line',
+    data: {
+        labels: Array.from({length: 30}, (_, i) => `Day ${i+1}`),
+        datasets: [{
+            label: 'Receita ($)',
+            data: Array.from({length: 30}, (_, i) => i < 28 ? 0 : Math.round(Math.random() * 9)),
+            borderColor: '#FFD700',
+            backgroundColor: 'rgba(255,215,0,0.05)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { display: false },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', callback: v => '$' + v } }
+        }
+    }
+});
+
+// Sales by Channel Pie
+const pieCtx = document.getElementById('salesPieChart').getContext('2d');
+new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['YouTube', 'Pinterest', 'TikTok', 'Outros'],
+        datasets: [{
+            data: [0, 0, 0, 0],
+            backgroundColor: ['#FF4444', '#E60023', '#000', '#888'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { color: '#888', padding: 12, font: { size: 11 } } }
+        }
+    }
+});
+
+// --- AUTO-REFRESH (via cron-generated JSON) ---
+async function refreshData() {
+    try {
+        const res = await fetch('./data/dashboard.json');
+        const data = await res.json();
+        updateDashboard(data);
+    } catch(e) {
+        console.log('Data file not yet available — using defaults');
+    }
+}
+
+function updateDashboard(data) {
+    if (data.revenue?.total) document.getElementById('totalRevenue').textContent = '$' + data.revenue.total;
+    if (data.sales?.total) document.getElementById('totalSales').textContent = data.sales.total;
+    if (data.leads?.total) document.getElementById('totalLeads').textContent = data.leads.total;
+    if (data.youtube?.subs) document.getElementById('ytSubs').textContent = data.youtube.subs;
+    if (data.youtube?.growth) document.getElementById('ytGrowth').textContent = '📈 +' + data.youtube.growth + ' esta semana';
+    if (data.youtube?.views) document.getElementById('ytViews').textContent = data.youtube.views;
+    if (data.youtube?.videos) document.getElementById('ytVideos').textContent = data.youtube.videos;
+    if (data.youtube?.clicks) document.getElementById('ytClicks').textContent = data.youtube.clicks;
+    if (data.youtube?.ctr) document.getElementById('ytCtr').textContent = data.youtube.ctr + '%';
+    if (data.youtube?.retention) document.getElementById('ytRetention').textContent = data.youtube.retention + '%';
+    if (data.gumroad?.sales) document.getElementById('gumroadSales').textContent = data.gumroad.sales;
+    if (data.gumroad?.revenue) document.getElementById('gumroadRevenue').textContent = '$' + data.gumroad.revenue;
+    if (data.lastUpdate) document.getElementById('lastUpdate').textContent = data.lastUpdate;
+}
+
+// Try to load data on page load
+refreshData();
+// Refresh every 5 minutes
+setInterval(refreshData, 300000);
+</script>
+
+</body>
+</html>
