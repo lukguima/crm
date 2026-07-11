@@ -94,6 +94,7 @@
     <button class="nav-item" data-page="tiktok"><span class="icon">🎵</span> TikTok Shop</button>
     <div class="nav-divider"></div>
     <button class="nav-item" data-page="clientes"><span class="icon">👥</span> Clientes</button>
+    <button class="nav-item" data-page="leads"><span class="icon">🎯</span> Leads</button>
     <button class="nav-item" data-page="produtos"><span class="icon">📦</span> Produtos</button>
     <button class="nav-item" data-page="relatorios"><span class="icon">📈</span> Relatórios</button>
     <div class="nav-divider"></div>
@@ -225,6 +226,49 @@
             <p style="color:#666;font-size:14px;max-width:400px;margin:0 auto;">
                 Precisa de login TikTok + Runpod com GPU pra criar vídeos com avatar.
             </p>
+        </div>
+    </div>
+
+    <!-- ============== LEADS ============== -->
+    <div class="page" id="page-leads">
+        <div class="topbar"><h2>🎯 Leads Pipeline</h2><div class="badge"><span id="leadCount">0 leads</span></div></div>
+        <div class="cards">
+            <div class="card"><div class="label">Total Leads</div><div class="value gold" id="leadTotal">0</div></div>
+            <div class="card"><div class="label">Hoje</div><div class="value" id="leadHoje">0</div><div class="sub">📅 Últimas 24h</div></div>
+            <div class="card"><div class="label">Email #1 Enviado</div><div class="value" id="leadEmail1">0</div></div>
+            <div class="card"><div class="label">Receberam Email #2</div><div class="value" id="leadEmail2">0</div></div>
+        </div>
+        <div class="section-title">🎯 Funil de Conversão</div>
+        <div class="card" style="padding:20px;">
+            <div style="display:flex;justify-content:space-between;margin:8px 0 4px;">
+                <span>🧲 Quiz Completado</span>
+                <span id="fquiz" style="color:#d4af37;">0</span>
+            </div>
+            <div style="height:6px;background:#1a1a2e;border-radius:3px;"><div id="fquizBar" style="height:100%;width:0%;background:#d4af37;border-radius:3px;transition:width 0.5s;"></div></div>
+            <div style="display:flex;justify-content:space-between;margin:16px 0 4px;">
+                <span>📧 Email #1</span>
+                <span id="femail1" style="color:#22d3ee;">0</span>
+            </div>
+            <div style="height:6px;background:#1a1a2e;border-radius:3px;"><div id="femail1Bar" style="height:100%;width:0%;background:#22d3ee;border-radius:3px;transition:width 0.5s;"></div></div>
+            <div style="display:flex;justify-content:space-between;margin:16px 0 4px;">
+                <span>📧 Email #2</span>
+                <span id="femail2" style="color:#4ade80;">0</span>
+            </div>
+            <div style="height:6px;background:#1a1a2e;border-radius:3px;"><div id="femail2Bar" style="height:100%;width:0%;background:#4ade80;border-radius:3px;transition:width 0.5s;"></div></div>
+            <div style="display:flex;justify-content:space-between;margin:16px 0 4px;">
+                <span>💰 Compra</span>
+                <span id="fcompra" style="color:#f59e0b;">0</span>
+            </div>
+            <div style="height:6px;background:#1a1a2e;border-radius:3px;"><div id="fcompraBar" style="height:100%;width:0%;background:#f59e0b;border-radius:3px;transition:width 0.5s;"></div></div>
+        </div>
+        <div class="section-title">📋 Últimos Leads</div>
+        <div class="table-box">
+            <table>
+                <thead><tr><th>Nome</th><th>Email</th><th>Estágio</th><th>Data</th><th>Etapa</th></tr></thead>
+                <tbody id="leadsTable">
+                    <tr><td colspan="5" style="text-align:center;color:#666;padding:30px;">Nenhum lead ainda. 🧲 Compartilhe o quiz!</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -386,6 +430,53 @@ async function refreshData() {
         }
         if (d.products) document.getElementById('dashProducts').textContent = d.products.length || 1;
         if (d.lastUpdate) document.getElementById('lastUpdate').textContent = d.lastUpdate;
+    } catch(e) {}
+    // Load leads data
+    try {
+        const r2 = await fetch('https://161.97.150.96:3001/api/lead-quiz');
+        const ld = await r2.json();
+        if (ld && ld.leads) {
+            const leads = ld.leads;
+            document.getElementById('leadTotal').textContent = ld.total || leads.length;
+            document.getElementById('leadCount').textContent = (ld.total || leads.length) + ' leads';
+            
+            // Last 24h
+            const hoje = new Date();
+            const hojeLeads = leads.filter(l => {
+                const d = new Date(l.data);
+                return (hoje - d) < 86400000;
+            });
+            document.getElementById('leadHoje').textContent = hojeLeads.length;
+            
+            // By stage
+            const email1 = leads.filter(l => l.etapa === 'email_1_enviado' || l.etapa === 'email_2_enviado').length;
+            const email2 = leads.filter(l => l.etapa === 'email_2_enviado').length;
+            document.getElementById('leadEmail1').textContent = email1;
+            document.getElementById('leadEmail2').textContent = email2;
+            
+            // Funnel
+            const total = leads.length || 1;
+            document.getElementById('fquiz').textContent = total;
+            document.getElementById('fquizBar').style.width = '100%';
+            
+            const pEmail1 = total > 0 ? (email1 / total * 100) : 0;
+            document.getElementById('femail1').textContent = email1 + ' (' + Math.round(pEmail1) + '%)';
+            document.getElementById('femail1Bar').style.width = pEmail1 + '%';
+            
+            const pEmail2 = total > 0 ? (email2 / total * 100) : 0;
+            document.getElementById('femail2').textContent = email2 + ' (' + Math.round(pEmail2) + '%)';
+            document.getElementById('femail2Bar').style.width = pEmail2 + '%';
+            
+            // Table
+            if (leads.length > 0) {
+                const tbody = document.getElementById('leadsTable');
+                tbody.innerHTML = leads.slice(-20).reverse().map(l =>
+                    '<tr><td>' + (l.nome || '—') + '</td><td>' + l.email + '</td><td>' + 
+                    (l.estagio || '—') + '</td><td>' + new Date(l.data).toLocaleDateString() + '</td><td>' +
+                    '<span class="tag ' + (l.etapa === 'comprou' ? 'live' : 'pending') + '">' + (l.etapa || 'novo') + '</span></td></tr>'
+                ).join('');
+            }
+        }
     } catch(e) {}
 }
 refreshData();

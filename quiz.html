@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Stage Quiz — The Bamboo Method</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0a0e1a;
+  color: #e8e6e3;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 60%);
+}
+.container {
+  max-width: 640px;
+  width: 100%;
+  padding: 20px;
+}
+.card {
+  background: linear-gradient(145deg, #111827, #0d1321);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.logo span {
+  font-size: 28px;
+  font-weight: 800;
+  color: #d4af37;
+  letter-spacing: -0.5px;
+}
+.logo small {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #1f2937;
+  border-radius: 4px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4af37, #f59e0b);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+.progress-text {
+  text-align: right;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+h1 .highlight { color: #d4af37; }
+p.sub {
+  color: #9ca3af;
+  font-size: 15px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.question { margin-bottom: 24px; }
+.question-label {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  background: #1a2234;
+  border: 1px solid #2a3346;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.option:hover { border-color: #d4af37; background: #1e2a40; }
+.option.selected {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
+}
+.option .radio {
+  width: 20px; height: 20px;
+  border: 2px solid #4b5563;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.option.selected .radio {
+  border-color: #d4af37;
+  background: #d4af37;
+}
+.option.selected .radio::after {
+  content: '';
+  width: 6px; height: 6px;
+  background: #0a0e1a;
+  border-radius: 50%;
+}
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #d4af37, #f59e0b);
+  color: #0a0e1a;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,175,55,0.3); }
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-secondary {
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid #2a3346;
+}
+.btn-secondary:hover { border-color: #d4af37; color: #e8e6e3; }
+.result-card {
+  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02));
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.result-stage {
+  font-size: 28px;
+  font-weight: 800;
+  color: #d4af37;
+  margin-bottom: 4px;
+}
+.result-label { font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; }
+.recommendations { margin-top: 20px; }
+.rec-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.rec-item:last-child { border: none; }
+.rec-num {
+  width: 24px; height: 24px;
+  background: #d4af37;
+  color: #0a0e1a;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0; margin-top: 2px;
+}
+.email-field {
+  width: 100%;
+  padding: 14px 16px;
+  background: #1a2234;
+  border: 1px solid #2a3346;
+  border-radius: 12px;
+  color: #e8e6e3;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-top: 12px;
+}
+.email-field:focus { border-color: #d4af37; }
+.email-field::placeholder { color: #6b7280; }
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: #4b5563;
+  margin-top: 20px;
+}
+.error-msg {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 8px;
+  display: none;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.screen.active { animation: fadeIn 0.4s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="logo">
+      <span>🎋 The Bamboo Method</span>
+      <small>DIAGNÓSTICO FINANCEIRO</small>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-text">Passo <span id="currentStep">0</span> de 7</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- SCREEN 1: Welcome -->
+    <div class="screen active" id="screen-welcome">
+      <h1>Descubra seu <span class="highlight">Estágio Financeiro</span></h1>
+      <p class="sub">7 perguntas. 3 minutos. No final, você recebe um diagnóstico personalizado com 3 recomendações específicas para sua situação.</p>
+      <p class="sub" style="font-size:13px;color:#6b7280;">🔒 Seus dados não são compartilhados. O diagnóstico é gratuito.</p>
+      <button class="btn btn-primary" onclick="startQuiz()">Começar →</button>
+    </div>
+
+    <!-- Questions 1-7 -->
+    <div class="screen" id="screen-question">
+      <div class="question" id="questionContainer"></div>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Próximo →</button>
+    </div>
+
+    <!-- SCREEN: Result -->
+    <div class="screen" id="screen-result">
+      <h1>Seu <span class="highlight">Diagnóstico</span> está pronto</h1>
+      <p class="sub">Com base nas suas respostas, aqui está seu perfil financeiro.</p>
+      <div class="result-card">
+        <div class="result-label">Seu estágio atual</div>
+        <div class="result-stage" id="resultStage">—</div>
+      </div>
+      <div class="recommendations" id="recommendations"></div>
+      <p class="sub" style="margin-top:20px;font-size:14px;">Quer receber o plano completo para avançar para o próximo estágio?</p>
+      <input class="email-field" id="emailField" type="email" placeholder="Seu melhor email" autocomplete="email">
+      <div class="error-msg" id="errorMsg">Por favor, insira um email válido.</div>
+      <button class="btn btn-primary" onclick="submitQuiz()">Receber meu plano completo →</button>
+      <p class="footer-note">🎋 Você também receberá a série gratuita "3 Dias para o Próximo Estágio"</p>
+    </div>
+
+    <!-- SCREEN: Thank you -->
+    <div class="screen" id="screen-thankyou">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+        <h1>Você está no caminho certo</h1>
+        <p class="sub">Seu diagnóstico foi enviado para <strong id="sentEmail">seu email</strong>.<br>
+        Abra agora — o primeiro email da série já está a caminho.</p>
+        <div style="margin-top:24px;padding:20px;background:#1a2234;border-radius:12px;">
+          <p style="font-size:14px;color:#9ca3af;">Enquanto isso, veja o que outros na sua fase fizeram:</p>
+          <p style="font-size:13px;color:#6b7280;margin-top:8px;">"Comecei como Semente e em 3 meses já estava no Broto. O método funciona." — <strong style="color:#d4af37;">Carlos</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = "http://161.97.150.96:3001/api/lead-quiz";
+
+const questions = [
+  {
+    q: "Qual dessas frases descreve melhor sua situação financeira hoje?",
+    options: [
+      { text: "Vivo no limite todo mês", value: 2 },
+      { text: "Consigo pagar as contas, mas não sobra", value: 5 },
+      { text: "Sobra um pouco, mas não invisto", value: 8 },
+      { text: "Já tenho reserva e invisto regularmente", value: 12 }
+    ]
+  },
+  {
+    q: "Se você perdesse sua renda amanhã, por quanto tempo conseguiria se manter?",
+    options: [
+      { text: "Menos de 1 mês", value: 2 },
+      { text: "De 1 a 3 meses", value: 5 },
+      { text: "De 3 a 6 meses", value: 9 },
+      { text: "Mais de 6 meses", value: 13 }
+    ]
+  },
+  {
+    q: "O que você sente quando pensa em investimentos?",
+    options: [
+      { text: "Medo — parece coisa de rico", value: 2 },
+      { text: "Confusão — não sei por onde começar", value: 5 },
+      { text: "Interesse — já pesquisei um pouco", value: 9 },
+      { text: "Confiança — já tenho uma estratégia", value: 13 }
+    ]
+  },
+  {
+    q: "Qual desses hábitos financeiros é mais verdadeiro pra você?",
+    options: [
+      { text: "Não acompanho meus gastos", value: 2 },
+      { text: "Olho o extrato de vez em quando", value: 5 },
+      { text: "Tenho planilha ou app de controle", value: 9 },
+      { text: "Tenho orçamento mensal definido", value: 13 }
+    ]
+  },
+  {
+    q: "Quanto do seu dinheiro você diria que está 'trabalhando pra você'?",
+    options: [
+      { text: "Nada — só uso pra gastar", value: 2 },
+      { text: "Menos de 10%", value: 5 },
+      { text: "Entre 10% e 30%", value: 9 },
+      { text: "Mais de 30%", value: 13 }
+    ]
+  },
+  {
+    q: "O que aconteceria se surgisse uma despesa inesperada de R$3.000 hoje?",
+    options: [
+      { text: "Faria um empréstimo ou parcelaria", value: 2 },
+      { text: "Usaria o cartão e pagaria depois", value: 5 },
+      { text: "Tiraria da poupança", value: 9 },
+      { text: "Não faria diferença no meu orçamento", value: 13 }
+    ]
+  },
+  {
+    q: "Qual dessas afirmações você mais acredita sobre dinheiro?",
+    options: [
+      { text: "Dinheiro é escasso e difícil de conseguir", value: 2 },
+      { text: "Se eu ganhar mais, resolvo meus problemas", value: 5 },
+      { text: "O problema não é quanto ganho, mas como administro", value: 9 },
+      { text: "Dinheiro é ferramenta — eu controlo ele", value: 13 }
+    ]
+  }
+];
+
+let currentQ = 0;
+let answers = [];
+let userName = "";
+let userEmail = "";
+
+function startQuiz() {
+  currentQ = 0;
+  answers = [];
+  showScreen("screen-question");
+  renderQuestion();
+  updateProgress();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const container = document.getElementById("questionContainer");
+  let html = `<div class="question-label">${currentQ+1}. ${q.q}</div><div class="options">`;
+  q.options.forEach((opt, i) => {
+    html += `<div class="option" onclick="selectOption(${i})" id="opt${i}">
+      <div class="radio"></div>${opt.text}</div>`;
+  });
+  html += "</div>";
+  container.innerHTML = html;
+  document.getElementById("nextBtn").disabled = true;
+}
+
+function selectOption(idx) {
+  const q = questions[currentQ];
+  document.querySelectorAll(".option").forEach(el => el.classList.remove("selected"));
+  document.getElementById(`opt${idx}`).classList.add("selected");
+  answers[currentQ] = q.options[idx].value;
+  document.getElementById("nextBtn").disabled = false;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResult();
+    return;
+  }
+  renderQuestion();
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const step = Math.min(currentQ + 1, total);
+  document.getElementById("currentStep").textContent = step;
+  document.getElementById("progressFill").style.width = `${(step / total) * 100}%`;
+}
+
+function showResult() {
+  showScreen("screen-result");
+  updateProgress();
+  const total = answers.reduce((a,b) => a + b, 0);
+  let stage = "";
+  if (total <= 10) stage = "🌱 Semente";
+  else if (total <= 20) stage = "🌿 Raiz";
+  else if (total <= 30) stage = "🎋 Broto";
+  else stage = "🎍 Bambu";
+  document.getElementById("resultStage").textContent = stage;
+
+  const recs = [
+    "Crie uma reserva de emergência de 6 meses antes de qualquer investimento",
+    "Acompanhe cada centavo por 30 dias — você vai se surpreender",
+    "O maior erro não é ganhar pouco, é não começar. O Bamboo Method te mostra o primeiro passo."
+  ];
+  const recContainer = document.getElementById("recommendations");
+  recContainer.innerHTML = recs.map((r, i) =>
+    `<div class="rec-item"><div class="rec-num">${i+1}</div>${r}</div>`
+  ).join("");
+}
+
+function submitQuiz() {
+  const email = document.getElementById("emailField").value.trim();
+  if (!email || !email.includes("@")) {
+    document.getElementById("errorMsg").style.display = "block";
+    return;
+  }
+  document.getElementById("errorMsg").style.display = "none";
+  document.getElementById("sentEmail").textContent = email;
+
+  const data = {
+    name: "",
+    email: email,
+    answers: answers,
+    source: "youtube"
+  };
+
+  // Save locally as fallback
+  try {
+    const local = JSON.parse(localStorage.getItem("quiz_leads") || "[]");
+    local.push({...data, estagio: document.getElementById("resultStage").textContent, data: new Date().toISOString()});
+    localStorage.setItem("quiz_leads", JSON.stringify(local));
+  } catch(e) {}
+
+  // Try to send to webhook
+  fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  }).catch(() => {});
+
+  showScreen("screen-thankyou");
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+</script>
+</body>
+</html>
